@@ -91,8 +91,37 @@ public:
     }
 };
 
+//Instancia para el display
+Adafruit_SSD1306 display(ANCHO_PANTALLA, ALTO_PANTALLA, &Wire, OLED_RESET);
+
+//Instancia para el LED
+Led ledAlerta(PIN_LED);
+
+//Instancia para el Sensor de Vibracion
+SensorVibracion sensor(PIN_SENSOR);
+
+//Instancia para el Buzzer
+Buzzer buzzer(PIN_BUZZER);
+
+//Variable que nos indica si estamos en modo alerta
+bool enAlerta = false;
+
 void setup() {
-  // put your setup code here, to run once:
+   Serial.begin(115200); //Inicia el puerto serie para depuración
+    Wire.begin();         //Inicia el I2C (para el display)
+
+    //Inicializamos objetos
+    ledAlerta.inicializar();
+    sensor.inicializar();
+    buzzer.inicializar();
+
+    //Inicializamos display
+    if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+        Serial.println(F("No se pudo iniciar el display"));
+        while (true); //Bucle infinito si falla
+    }
+
+    actualizarDisplay("Monitoreando...", "Nivel: Estable", 1);       //Iniciamos el display con el mensaje del modo en reposo
 
 }
 
