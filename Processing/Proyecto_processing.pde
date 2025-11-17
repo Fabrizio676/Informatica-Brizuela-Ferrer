@@ -109,7 +109,6 @@ void serialEvent(Serial p) {
 
     //3ro: Dibujar Gráfico
     miGrafico.dibujar(sensorValue);
-    }
     
     if (sensorValue > UMBRAL_PC) {     //Si valor medido supera umbral se activa alerta
       if (!enAlertaPC) {
@@ -140,8 +139,8 @@ void serialEvent(Serial p) {
           println("-----------------------");
         }
     }
-} catch (Exception e) {    // Ignorar si el dato no es un número
-    }
+  } catch (Exception e) {}    // Ignorar si el dato no es un número
+}
 
 //funcion para controlar umbral de sensibilidad
 void keyPressed() {
