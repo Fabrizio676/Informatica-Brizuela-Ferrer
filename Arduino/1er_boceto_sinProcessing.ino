@@ -126,6 +126,51 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+ //Leemos el estado del sensor
+    bool vibracionDetectada = sensor.hayVibracion();
+    
+    //Caso 1: Se detecta vibración y el estado era reposo
+    if (vibracionDetectada && !enAlerta) {
+        enAlerta = true;    //El estado cambia a alerta
+        
+        //Se ejecutan las acciones de alerta
+        ledAlerta.encender();
+        buzzer.sonarAlerta(); // Suena una vez
+        
+        //Actualizamos la pantalla
+        actualizarDisplay("¡ALERTA!", "Vibracion detectada", 2);
+    }
+    
+    //Caso 2: no se detecta vibración y el estado era en alerta
+    else if (!vibracionDetectada && enAlerta) {
+        enAlerta = false;
+        
+        //Apagamos las alertas
+        ledAlerta.apagar();
+        
+        //Actualizamos la pantalla
+        actualizarDisplay("Monitoreando...", "Nivel: Estable", 1);
+    }
+    delay(50);
+}
 
+
+
+
+//Función para actualizar el display
+void actualizarDisplay(String linea1, String linea2, int tamanoLinea1) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    
+    //Línea 1
+    display.setTextSize(tamanoLinea1);
+    display.setTextColor(SSD1306_WHITE);
+    display.println(linea1);
+
+    //Línea 2
+    display.setTextSize(1);
+    display.println("");
+    display.println(linea2);
+    
+    display.display();
 }
