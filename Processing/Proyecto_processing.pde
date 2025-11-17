@@ -85,9 +85,9 @@ void draw() {
   }
   
   //interfaz de usuario (Texto)
-  fill(0); // Texto negro
-  rect(0, 0, width, 40); // Barra superior blanca para el texto
-  fill(0);
+  fill(173, 216, 230); //color celeste claro
+  rect(0, 0, width, 40); //dibuja barra superior con el color de arriba
+  fill(0);               //vuelve a poner color en negro para texto
   textSize(16);
   text("Sismógrafo en Tiempo Real | UMBRAL PC: " + UMBRAL_PC + " (Presiona 'U' para subir / 'J' para bajar)", 10, 25);
 }
