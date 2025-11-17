@@ -76,3 +76,37 @@ void setup() {
     myPort.write("s" + UMBRAL_PC + "\n");
   }
 }
+//Bucle draw
+void draw() {
+  if (enAlertaPC) {
+    fill(255, 0, 0, 100); //pantalla roja con transparencia
+    rect(0, 0, width, height);
+  }
+  
+  //interfaz de usuario (Texto)
+  fill(0); // Texto negro
+  rect(0, 0, width, 40); // Barra superior blanca para el texto
+  fill(0);
+  textSize(16);
+  text("Sismógrafo en Tiempo Real | UMBRAL PC: " + UMBRAL_PC + " (Presiona 'U' para subir / 'J' para bajar)", 10, 25);
+}
+
+void serialEvent(Serial p) {
+  String data = p.readStringUntil('\n');
+  if (data == null) return;
+  
+  data = trim(data); //limpiar espacios
+
+  try {
+    //1ero: Leo y convierto el dato
+    int sensorValue = int(data);
+    
+    //2do: Registro el dato en archivo .csv
+    long timestamp = System.currentTimeMillis();
+    outputCSV.println(timestamp + "," + sensorValue);
+    outputCSV.flush();
+
+    //3ro: Dibujar Gráfico
+    miGrafico.dibujar(sensorValue);
+    }
+}
