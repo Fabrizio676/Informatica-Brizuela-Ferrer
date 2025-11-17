@@ -76,6 +76,7 @@ void setup() {
     myPort.write("s" + UMBRAL_PC + "\n");
   }
 }
+
 //Bucle draw
 void draw() {
   if (enAlertaPC) {
@@ -108,5 +109,23 @@ void serialEvent(Serial p) {
 
     //3ro: Dibujar Gráfico
     miGrafico.dibujar(sensorValue);
+    }
+    
+    if (sensorValue > UMBRAL_PC) {     //Si valor medido supera umbral se activa alerta
+      if (!enAlertaPC) {
+        enAlertaPC = true;             //Si no estaba en alerta, ahora lo estoy
+        tiempoInicioEvento = millis(); //Registro tiempo de inicio
+        maxAmplitudEvento = sensorValue; //Registro primera amplitud de vibracion
+        
+        //Sonar alarma (si no está sonando)
+        if (alarma != null && !alarma.isPlaying()) {
+          alarma.play();
+        }
+      }
+      
+      //Actualizar amplitud máxima durante el evento
+      if (sensorValue > maxAmplitudEvento) {
+        maxAmplitudEvento = sensorValue;
+      }
     }
 }
