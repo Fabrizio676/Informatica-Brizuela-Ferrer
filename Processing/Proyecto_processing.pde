@@ -127,5 +127,36 @@ void serialEvent(Serial p) {
       if (sensorValue > maxAmplitudEvento) {
         maxAmplitudEvento = sensorValue;
       }
+    } else {
+        //fin de alerta
+        if (enAlertaPC) {        //si estoy en alerta, salgo de ese modo
+          enAlertaPC = false;
+          long duracionEvento = millis() - tiempoInicioEvento;
+          
+          //Imprimir análisis en consola
+          println("--- FIN DE EVENTO ---");
+          println("  Duración: " + (duracionEvento / 1000.0) + " segundos");
+          println("  Amplitud Máxima: " + maxAmplitudEvento);
+          println("-----------------------");
+        }
     }
+} catch (Exception e) {    // Ignorar si el dato no es un número
+    }
+
+//funcion para controlar umbral de sensibilidad
+void keyPressed() {
+  if (key == 'u' || key == 'U') {
+    UMBRAL_PC += 10; // Aumentar umbral
+  } else if (key == 'j' || key == 'J') {
+    if (UMBRAL_PC > 10) { // Evitar que sea negativo
+      UMBRAL_PC -= 10; // Disminuir umbral
+    }
+  }
+
+  // Enviar el nuevo umbral al Arduino
+  if (myPort != null) {
+    // "s" es el prefijo que el Arduino entenderá
+    myPort.write("s" + UMBRAL_PC + "\n");
+    println("Enviando nuevo umbral al Arduino: " + UMBRAL_PC);
+  }
 }
