@@ -24,8 +24,13 @@ Led ledAlerta(PIN_LED);
 SensorVibracion sensor(PIN_SENSOR);
 Buzzer buzzer(PIN_BUZZER);
 
+//variables globales
 bool enAlerta = false;
 int UMBRAL_ALERTA = 100;
+
+//Variables para cooldown)
+unsigned long tiempoUltimaVibracion = 0; 
+const int TIEMPO_ESPERA = 1000; // Esperar 2 segundos antes de apagar la alerta
 
 void setup() {
    Serial.begin(115200);
@@ -41,74 +46,78 @@ void setup() {
         Serial.println(F("No se pudo iniciar el display"));
         while (true);
     }
-    actualizarDisplay("Monitoreando...", "Umbral: " + String(UMBRAL_ALERTA), 1);
+    
+    actualizarDisplay("Vigilando", "Umbral: " + String(UMBRAL_ALERTA), 2);
 }
 
 void loop() {
-    //1ero: REVISO SI LLEGO UN NUEVO UMBRAL DESDE PROCESSING
     revisarSerialEntrante();
-
-    //2do: LEO VALOR DEL SENSOR
     int valorSensor = sensor.leerValorAnalogico();
-
-    //3ro: ENVIAMOS EL DATO A PROCESSING (para gráfico y log)
+    //envio dato a processing
     Serial.println(valorSensor);
 
     bool vibracionDetectada = (valorSensor > UMBRAL_ALERTA);
-
-    //Caso 1: Se detecta vibración y el estado era reposo
-    if (vibracionDetectada && !enAlerta) { 
-        enAlerta = true; 
-        ledAlerta.encender();
-        buzzer.sonarAlerta();
-        actualizarDisplay("¡ALERTA!", "Vibracion detectada", 2);
-    }
     
-    //Caso 2: no se detecta vibración y el estado era en alerta
-    else if (!vibracionDetectada && enAlerta) {
-        enAlerta = false;
-        ledAlerta.apagar();
-        actualizarDisplay("Monitoreando...", "Umbral: " + String(UMBRAL_ALERTA), 1);
-    }
+    if (vibracionDetectada) {
+        // Actualizamos el reloj de la ultima medicion
+        tiempoUltimaVibracion = millis();
 
+        buzzer.sonarAlerta(); 
+        
+        //si no estaba en alerta, la activo
+        if (!enAlerta) { 
+            enAlerta = true; 
+            ledAlerta.encender();
+            actualizarDisplay("¡ALERTA!", "Vibracion!", 2);
+        }
+    }
+    else {
+        //si no hay vibracion espero un segundo y desactivo modo alerta
+        if (enAlerta && (millis() - tiempoUltimaVibracion > TIEMPO_ESPERA)) {
+            enAlerta = false;
+            ledAlerta.apagar();
+            buzzer.silenciar();
+            
+            actualizarDisplay("Vigilando", "Umbral: " + String(UMBRAL_ALERTA), 2);
+        }
+    }
     delay(20);
 }
 
-void revisarSerialEntrante() {    //funcion que revisa si processin envio un nuevo umbral
+void revisarSerialEntrante() {    
   if (Serial.available() > 0) {
     String comando = Serial.readStringUntil('\n');
     comando.trim();
     
-    //comando debe empezar con s
     if (comando.startsWith("s")) {
-      //Extrae numero después de la s
       String valorStr = comando.substring(1);
       int nuevoUmbral = valorStr.toInt();
       
       if (nuevoUmbral > 0) {
         UMBRAL_ALERTA = nuevoUmbral;
         
-        //actualizar el display con el nuevo umbral si no estamos en alerta
+        //actualizo pantalla si cambiamos umbral
         if (!enAlerta) {
-          actualizarDisplay("Monitoreando...", "Umbral: " + String(UMBRAL_ALERTA), 1);
+          actualizarDisplay("Vigilando", "Umbral:" + String(UMBRAL_ALERTA), 2);
         }
       }
     }
   }
 }
 
-//Función para actualizar el display
+//Función para actualizar display
 void actualizarDisplay(String linea1, String linea2, int tamanoLinea1) {
     display.clearDisplay();
     display.setCursor(0, 0);
-    //Línea 1
-    display.setTextSize(tamanoLinea1);
+    
+    //Línea 1 (Título)
+    display.setTextSize(tamanoLinea1); 
     display.setTextColor(SSD1306_WHITE);
     display.println(linea1);
 
-    //Línea 2
-    display.setTextSize(1);
+    //Línea 2 (Subtítulo)
     display.println("");
+    display.setTextSize(2);
     display.println(linea2);
     
     display.display();
