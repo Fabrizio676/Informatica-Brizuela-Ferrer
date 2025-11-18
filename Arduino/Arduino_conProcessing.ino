@@ -1,53 +1,22 @@
-//Librerías
+//Librerías externas
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-//Definiciones
+//Librerias Propias
+#include "Led.h"
+#include "Buzzer.h"
+#include "SensorVibracion.h"
+
+//Definiciones de pines
 #define PIN_SENSOR     A0
 #define PIN_LED        D7
 #define PIN_BUZZER     D6
-
-int UMBRAL_ALERTA = 100;
 
 //Configuración del Display OLED
 #define ANCHO_PANTALLA   128   
 #define ALTO_PANTALLA    64 
 #define OLED_RESET     -1
-
-//Clase LED
-class Led {
-private:
-    byte pin;
-public:
-    Led(byte pin) { this->pin = pin; }
-    void inicializar() { pinMode(pin, OUTPUT); apagar(); }
-    void encender() { digitalWrite(pin, HIGH); }
-    void apagar() { digitalWrite(pin, LOW); }
-};
-
-//Clase del sensor de vibraciones
-class SensorVibracion {
-private:
-    int pin;
-public:
-    SensorVibracion(int pin) { this->pin = pin; }
-    void inicializar() { pinMode(pin, INPUT); }
-    int leerValorAnalogico() {
-        return analogRead(pin); //Leo valor del sensor
-    }
-};
-
-//Clase del Buzzer
-class Buzzer {
-private:
-    int pin;
-public:
-    Buzzer(int pin) { this->pin = pin; }
-    void inicializar() { pinMode(pin, OUTPUT); }
-    void sonarAlerta() { tone(pin, 1500, 500); }
-    void silenciar() { noTone(pin); }
-};
 
 //Instancias
 Adafruit_SSD1306 display(ANCHO_PANTALLA, ALTO_PANTALLA, &Wire, OLED_RESET);
@@ -56,6 +25,7 @@ SensorVibracion sensor(PIN_SENSOR);
 Buzzer buzzer(PIN_BUZZER);
 
 bool enAlerta = false;
+int UMBRAL_ALERTA = 100;
 
 void setup() {
    Serial.begin(115200);
